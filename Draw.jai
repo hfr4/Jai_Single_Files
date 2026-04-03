@@ -328,7 +328,7 @@ DrawRoundedPolygon :: (using rp: Rounded_Polygon) {
 }
 
 DrawEllipse :: (using ellipse: Ellipse) {
-    nb_of_points :: 50;
+    nb_of_points :: 60;
     THETA :: TAU / nb_of_points;
     vertices : [nb_of_points] Vector2;
     for * vertices it.* = Vector2.{ x, y } + Vector2.{ cos(THETA * it_index) * w, sin(THETA * it_index) * h };
@@ -337,7 +337,9 @@ DrawEllipse :: (using ellipse: Ellipse) {
 
 LoadTexture :: (path: string) -> Texture {
     texture : Texture;
-    loaded := Simp.texture_load_from_file(*texture, path);
+    loaded : bool;
+    if      file_exists(path)                 loaded = Simp.texture_load_from_file(*texture, path);
+    else if file_exists(tprint("../%", path)) loaded = Simp.texture_load_from_file(*texture, tprint("../%", path));
     assert(loaded);
     return texture;
 }
@@ -388,7 +390,9 @@ DrawTexture :: (using texture: Texture, using rectangle: Rectangle) {
 }
 
 LoadFont :: (path: string, size: int) -> *Font {
-    font := Simp.get_font_at_size(".", path, size);
+    font : *Font;
+    if      file_exists(path)                 font = Simp.get_font_at_size(".", path, size);
+    else if file_exists(tprint("../%", path)) font = Simp.get_font_at_size(".", tprint("../%", path), size);
     assert(font != null);
     return font;
 }

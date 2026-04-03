@@ -140,7 +140,9 @@ MouseDeltaOnApplication :: () -> Vector2 {
 }
 
 LoadSound :: (path: string) -> Sound {
-    sound := Sound_Player.load_audio_file(path);
+    sound : Sound;
+    if      file_exists(path)                 sound = Sound_Player.load_audio_file(path);
+    else if file_exists(tprint("../%", path)) sound = Sound_Player.load_audio_file(tprint("../%", path));
     assert(sound.loaded);
     return sound;
 }
@@ -183,3 +185,4 @@ Sound_Player :: #import "Sound_Player";
 #import "Math";
 #import "Sort";
 #import "File";
+#import "File_Utilities";
