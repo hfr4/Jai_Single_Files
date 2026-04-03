@@ -1244,111 +1244,6 @@ HexToRGBA :: (hex: int) -> Vector4Int {
     return { r, g, b, a };
 }
 
-Static_Array :: struct(capacity: int, type: Type) {
-    count : int;
-    data  : [capacity] type;
-}
-
-operator *[] :: (array: *Static_Array, index: int) -> *array.type {
-    assert(index >= 0);
-    assert(index < array.count);
-    return *array.data[index];
-}
-
-for_expansion :: (array: *$T/Static_Array, body: Code, flags: For_Flags) #expand {
-    REVERSE :: cast(bool) (flags & .REVERSE);
-    POINTER :: cast(bool) (flags & .POINTER);
-
-    for <=REVERSE i : 0..array.count - 1 {
-        `it       := #ifx POINTER then *array.data[i] else array.data[i];
-        `it_index := i;
-
-        #insert (remove={ unordered_remove_by_index(array, i); }) body;
-    }
-}
-
-array_add :: (array: *Static_Array, item: array.type) {
-    array.data[array.count] = item;
-    array.count += 1;
-}
-
-array_add :: (array: *Static_Array, to_append: ..array.type) {
-    for to_append array_add(array, it);
-}
-
-array_add_if_unique :: (array: *Static_Array, item: array.type) -> bool, int {
-    found, index := array_find(array, item);
-    if found return false, index;
-
-    array_add(array, item);
-    return true, array.count - 1;
-}
-
-array_insert_at :: (array: *Static_Array, item: array.type, index: int) {
-    assert(index >= 0);
-    assert(index <= array.count);
-    array.data[index] = item;
-}
-
-unordered_remove_by_value :: (array: *Static_Array, item: array.type, $stop_after_first := false) -> int {
-    removed := 0;
-    for array.*  if it == item {
-        removed += 1;
-        remove it;
-
-        #if stop_after_first break;
-    }
-
-    return removed;
-}
-
-unordered_remove_by_index :: (array: *Static_Array, index: int) {
-    assert(index >= 0);
-    assert(index < array.count);
-
-    last_index := array.count - 1;
-    if index != last_index  array.data[index] = array.data[last_index];
-
-    array.count -= 1;
-}
-
-ordered_remove_by_value :: (array: *Static_Array, item: array.type) -> bool {
-    found, index := array_find(array, item);
-    if found ordered_remove_by_index(array, index);
-    return found;
-}
-
-ordered_remove_by_index :: (array: *Static_Array, index: int) {
-    assert(index >= 0);
-    assert(index < array.count);
-
-    for i : index..array.count-2
-        array.data[i] = array.data[i+1];
-
-    array.count -= 1;
-}
-
-array_find :: (array: *Static_Array, item: array.type) -> bool, int {
-    for array if it == item return true, it_index;
-    return false, -1;  // Not found.
-}
-
-pop :: (array: *Static_Array, item: array.type) {
-    array.count -= 1;
-}
-
-peek :: inline (array: *Static_Array) -> array.type {
-    return array.data[array.count-1];
-}
-
-peek_pointer :: inline (array: *Static_Array) -> *array.type {
-    return *array.data[array.count-1];
-}
-
-array_reset :: (array: *Static_Array) {
-    array.count = 0;
-}
-
 Grid :: struct(cols: int, rows: int, type: Type) {
     cells : [cols][rows] type;
 }
@@ -1466,13 +1361,13 @@ Yoyo :: (fn: (float) -> float, x: float) -> float {
     return (ifx x < .5 then fn(x*2) else 1 - fn(x*2 - 1));
 }
 
-InQuad     :: (x: float) -> float { return x*x;                    }
-InCubic    :: (x: float) -> float { return x*x*x;                  }
-InQuart    :: (x: float) -> float { return x*x*x*x;                }
-InQuint    :: (x: float) -> float { return x*x*x*x*x;              }
-InSine     :: (x: float) -> float { return 1 - sin((1-x)*HALF_PI); }
-InCirc     :: (x: float) -> float { return 1 - sqrt(1-x*x);        }
-InExpo     :: (x: float) -> float { return pow(2, (x-1)*10);       }
+InQuad     :: (x: float) -> float { return x*x;                 }
+InCubic    :: (x: float) -> float { return x*x*x;               }
+InQuart    :: (x: float) -> float { return x*x*x*x;             }
+InQuint    :: (x: float) -> float { return x*x*x*x*x;           }
+InSine     :: (x: float) -> float { return 1 - sin((1-x)*PI/2); }
+InCirc     :: (x: float) -> float { return 1 - sqrt(1-x*x);     }
+InExpo     :: (x: float) -> float { return pow(2, (x-1)*10);    }
 
 OutQuad    :: #bake_arguments Out(fn = InQuad);
 OutCubic   :: #bake_arguments Out(fn = InCubic);
@@ -1586,7 +1481,6 @@ RandomPoint :: (r: Rectangle) -> Vector2 {
 #scope_file
 
 EPSILON :: 0.00001;
-HALF_PI :: PI / 2;
 
 #import "Basic";
 #import "Math";

@@ -16,8 +16,6 @@ choose_which_file_to_build :: () -> [..] string {
     assert(compile_time_command_line.count == 1, "You can either pass a specific file name 'jai first.jai - the_file' or 'jai first.jai - all' to build all the files at once.");
 
     all_files := file_list(SOURCE_FOLDER);
-    for all_files if basename(it) == "Main" || basename(it) == "Draw" || basename(it) == "Utilities" remove it;
-
     files_to_build : [..] string;
 
     if array_find(compile_time_command_line, "all") {
@@ -68,7 +66,7 @@ build_one :: (path: string, run_after_build := false) {
     if run_after_build run_command(sprint("%\\%", output_path, output_executable_name));
 }
 
-BUILD_FOLDER  :: "build";
+BUILD\_FOLDER :: "build";
 ASSETS_FOLDER :: "assets";
 SOURCE_FOLDER :: "source";
 
